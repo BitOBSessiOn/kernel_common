@@ -17,10 +17,6 @@
 
 #include <linux/version.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0))
-#error This driver only works with kernel 3.19 and later
-#endif
-
 struct rtw_wdev_invit_info {
 	u8 state; /* 0: req, 1:rep */
 	u8 peer_mac[ETH_ALEN];

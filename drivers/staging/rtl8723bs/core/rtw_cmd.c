@@ -248,11 +248,9 @@ void _rtw_free_evt_priv(struct	evt_priv *pevtpriv)
 void _rtw_free_cmd_priv(struct	cmd_priv *pcmdpriv)
 {
 	if (pcmdpriv) {
-		if (pcmdpriv->cmd_allocated_buf)
-			kfree(pcmdpriv->cmd_allocated_buf);
+		kfree(pcmdpriv->cmd_allocated_buf);
 
-		if (pcmdpriv->rsp_allocated_buf)
-			kfree(pcmdpriv->rsp_allocated_buf);
+		kfree(pcmdpriv->rsp_allocated_buf);
 
 		mutex_destroy(&pcmdpriv->sctx_mutex);
 	}
@@ -1354,8 +1352,6 @@ u8 traffic_status_watchdog(struct adapter *padapter, u8 from_timer)
 
 	struct mlme_priv 	*pmlmepriv = &(padapter->mlmepriv);
 
-	RT_LINK_DETECT_T *link_detect = &pmlmepriv->LinkDetectInfo;
-
 	collect_traffic_statistics(padapter);
 
 	/*  */
@@ -1387,22 +1383,6 @@ u8 traffic_status_watchdog(struct adapter *padapter, u8 from_timer)
 			else
 				bHigherBusyTxTraffic = true;
 		}
-
-#ifdef CONFIG_TRAFFIC_PROTECT
-#define TX_ACTIVE_TH 10
-#define RX_ACTIVE_TH 20
-#define TRAFFIC_PROTECT_PERIOD_MS 4500
-
-	if (link_detect->NumTxOkInPeriod > TX_ACTIVE_TH
-		|| link_detect->NumRxUnicastOkInPeriod > RX_ACTIVE_TH) {
-
-		DBG_871X_LEVEL(_drv_info_, FUNC_ADPT_FMT" acqiure wake_lock for %u ms(tx:%d, rx_unicast:%d)\n",
-			FUNC_ADPT_ARG(padapter),
-			TRAFFIC_PROTECT_PERIOD_MS,
-			link_detect->NumTxOkInPeriod,
-			link_detect->NumRxUnicastOkInPeriod);
-	}
-#endif
 
 		/*  check traffic for  powersaving. */
 		if (((pmlmepriv->LinkDetectInfo.NumRxUnicastOkInPeriod + pmlmepriv->LinkDetectInfo.NumTxOkInPeriod) > 8) ||
@@ -1763,6 +1743,8 @@ u8 rtw_ps_cmd(struct adapter *padapter)
 exit:
 	return res;
 }
+
+u32 g_wait_hiq_empty = 0;
 
 static void rtw_chk_hi_queue_hdl(struct adapter *padapter)
 {

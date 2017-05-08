@@ -37,9 +37,7 @@ void rtw_hal_data_deinit(struct adapter *padapter)
 {
 	if (is_primary_adapter(padapter)) {	/* if (padapter->isprimary) */
 		if (padapter->HalData) {
-			#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 			phy_free_filebuf(padapter);
-			#endif
 			vfree(padapter->HalData);
 			padapter->HalData = NULL;
 			padapter->hal_data_sz = 0;
@@ -1733,11 +1731,11 @@ void rtw_bb_rf_gain_offset(struct adapter *padapter)
 			for (i = 0; i < ArrayLen; i += 2) {
 				v1 = Array[i];
 				v2 = Array[i+1];
-				 if (v1 == padapter->eeprompriv.EEPROMRFGainVal) {
-						DBG_871X("Offset RF Gain. got v1 = 0x%x , v2 = 0x%x\n", v1, v2);
-						target = v2;
-						break;
-				 }
+				if (v1 == padapter->eeprompriv.EEPROMRFGainVal) {
+					DBG_871X("Offset RF Gain. got v1 = 0x%x , v2 = 0x%x\n", v1, v2);
+					target = v2;
+					break;
+				}
 			}
 			DBG_871X("padapter->eeprompriv.EEPROMRFGainVal = 0x%x , Gain offset Target Value = 0x%x\n", padapter->eeprompriv.EEPROMRFGainVal, target);
 			PHY_SetRFReg(padapter, RF_PATH_A, REG_RF_BB_GAIN_OFFSET, BIT18|BIT17|BIT16|BIT15, target);

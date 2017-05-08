@@ -211,7 +211,6 @@ MODULE_PARM_DESC(rtw_tx_pwr_lmt_enable,"0:Disable, 1:Enable, 2: Depend on efuse"
 module_param(rtw_tx_pwr_by_rate, int, 0644);
 MODULE_PARM_DESC(rtw_tx_pwr_by_rate,"0:Disable, 1:Enable, 2: Depend on efuse");
 
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 char *rtw_phy_file_path = "";
 module_param(rtw_phy_file_path, charp, 0644);
 MODULE_PARM_DESC(rtw_phy_file_path, "The path of phy parameter");
@@ -229,7 +228,6 @@ MODULE_PARM_DESC(rtw_load_phy_file,"PHY File Bit Map");
 static int rtw_decrypt_phy_file = 0;
 module_param(rtw_decrypt_phy_file, int, 0644);
 MODULE_PARM_DESC(rtw_decrypt_phy_file,"Enable Decrypt PHY File");
-#endif
 
 int _netdev_open(struct net_device *pnetdev);
 int netdev_open (struct net_device *pnetdev);
@@ -340,10 +338,8 @@ static uint loadparam(struct adapter *padapter, _nic_hdl pnetdev)
 	registry_par->bEn_RFE = 1;
 	registry_par->RFE_Type = 64;
 
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 	registry_par->load_phy_file = (u8)rtw_load_phy_file;
 	registry_par->RegDecryptCustomFile = (u8)rtw_decrypt_phy_file;
-#endif
 	registry_par->qos_opt_enable = (u8)rtw_qos_opt_enable;
 
 	registry_par->hiq_filter = (u8)rtw_hiq_filter;
@@ -530,9 +526,10 @@ static const struct net_device_ops rtw_netdev_ops = {
 
 int rtw_init_netdev_name(struct net_device *pnetdev, const char *ifname)
 {
-	if (dev_alloc_name(pnetdev, ifname) < 0)
-		RT_TRACE(_module_os_intfs_c_, _drv_err_, ("dev_alloc_name, fail!\n"));
-
+	if (dev_alloc_name(pnetdev, ifname) < 0) {
+		pr_err("dev_alloc_name, fail for %s\n", ifname);
+		return 1;
+	}
 	netif_carrier_off(pnetdev);
 	/* rtw_netif_stop_queue(pnetdev); */
 
@@ -551,6 +548,7 @@ struct net_device *rtw_init_netdev(struct adapter *old_padapter)
 	else
 		pnetdev = rtw_alloc_etherdev(sizeof(struct adapter));
 
+	pr_info("pnetdev = %p\n", pnetdev);
 	if (!pnetdev)
 		return NULL;
 
@@ -925,7 +923,8 @@ static int _rtw_drv_register_netdev(struct adapter *padapter, char *name)
 	struct net_device *pnetdev = padapter->pnetdev;
 
 	/* alloc netdev name */
-	rtw_init_netdev_name(pnetdev, name);
+	if (rtw_init_netdev_name(pnetdev, name))
+		return _FAIL;
 
 	memcpy(pnetdev->dev_addr, padapter->eeprompriv.mac_addr, ETH_ALEN);
 
@@ -1080,7 +1079,7 @@ static int  ips_netdrv_open(struct adapter *padapter)
 
 	_set_timer(&padapter->mlmepriv.dynamic_chk_timer, 2000);
 
-	 return _SUCCESS;
+	return _SUCCESS;
 
 netdev_open_error:
 	/* padapter->bup = false; */
@@ -1276,7 +1275,8 @@ void rtw_dev_unload(struct adapter *padapter)
 			}
 			padapter->bSurpriseRemoved = true;
 		}
-		RT_TRACE(_module_hci_intfs_c_, _drv_notice_, ("@ %s: deinit hal complelt!\n", __func__));
+		RT_TRACE(_module_hci_intfs_c_, _drv_notice_,
+			 ("@ %s: deinit hal complete!\n", __func__));
 
 		padapter->bup = false;
 

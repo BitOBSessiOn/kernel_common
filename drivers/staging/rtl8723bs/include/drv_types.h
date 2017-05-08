@@ -22,6 +22,8 @@
 #ifndef __DRV_TYPES_H__
 #define __DRV_TYPES_H__
 
+#include <linux/version.h>
+#include <linux/sched/signal.h>
 #include <autoconf.h>
 #include <basic_types.h>
 #include <osdep_service.h>
@@ -207,10 +209,8 @@ struct registry_priv
 	u8 RFE_Type;
 	u8  check_fw_ps;
 
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 	u8 load_phy_file;
 	u8 RegDecryptCustomFile;
-#endif
 
 #ifdef CONFIG_MULTI_VIR_IFACES
 	u8 ext_iface_num;/* primary/secondary iface is excluded */

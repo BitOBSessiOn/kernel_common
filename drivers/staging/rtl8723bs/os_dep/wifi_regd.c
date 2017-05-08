@@ -51,7 +51,7 @@ static int rtw_ieee80211_channel_to_frequency(int chan, int band)
 	/* see 802.11 17.3.8.3.2 and Annex J
 	 * there are overlapping channel numbers in 5GHz and 2GHz bands */
 
-	/* IEEE80211_BAND_2GHZ */
+	/* NL80211_BAND_2GHZ */
 	if (chan == 14)
 		return 2484;
 	else if (chan < 14)
@@ -74,7 +74,7 @@ static void _rtw_reg_apply_flags(struct wiphy *wiphy)
 	u32 freq;
 
 	/*  all channels disable */
-	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
+	for (i = 0; i < NUM_NL80211_BANDS; i++) {
 		sband = wiphy->bands[i];
 
 		if (sband) {
@@ -92,7 +92,7 @@ static void _rtw_reg_apply_flags(struct wiphy *wiphy)
 		channel = channel_set[i].ChannelNum;
 		freq =
 		    rtw_ieee80211_channel_to_frequency(channel,
-						       IEEE80211_BAND_2GHZ);
+						       NL80211_BAND_2GHZ);
 
 		ch = ieee80211_get_channel(wiphy, freq);
 		if (ch) {
